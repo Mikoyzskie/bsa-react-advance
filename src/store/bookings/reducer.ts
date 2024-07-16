@@ -1,26 +1,37 @@
-import { IBookings } from "../../common/types";
-import { Action } from "./actions";
+import { createReducer, Reducer } from "@reduxjs/toolkit";
+import { loadAllBookings, createNewBooking, removeBooking } from "./actions";
+import { Booking } from "../../common/types";
 
-type State = {
-  bookings: IBookings[];
-};
+export interface BookingsState {
+  loading: boolean;
+  bookings: Booking[];
+}
 
-const initialState: State = {
+const initialState: BookingsState = {
+  loading: false,
   bookings: [],
 };
 
-const reducer = (state = initialState, action: Action): State => {
-  switch (action.type) {
-    case "bookings/add-booking": {
-      return {
-        ...state,
-        bookings: [...state.bookings, action.payload],
-      };
-    }
-    default: {
-      return state;
-    }
-  }
-};
+const reducer: Reducer<BookingsState> = createReducer(
+  initialState,
+  (builder) => {
+    builder.addCase(loadAllBookings.fulfilled, (state, action) => {
+      state.bookings = action.payload as Booking[];
+      state.loading = false;
+    });
 
-export { reducer };
+    builder.addCase(loadAllBookings.pending, (state) => {
+      state.loading = true;
+    });
+
+    builder.addCase(createNewBooking.fulfilled, (state, action) => {
+      state.bookings.push(action.payload as Booking);
+    });
+
+    builder.addCase(removeBooking.fulfilled, (state, action) => {
+      state.bookings = action.payload as unknown as Booking[];
+    });
+  }
+);
+
+export { reducer as bookingReducer };

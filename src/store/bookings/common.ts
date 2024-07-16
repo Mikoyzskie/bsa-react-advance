@@ -1,6 +1,15 @@
-const ActionType = {
-  ADD_BOOKING: "bookings/add-booking",
-  DELETE_BOOKING: "bookings/delete-booking",
-} as const;
+import { createSelector } from "@reduxjs/toolkit";
+import { RootState } from "../store";
+export const selectLoading = (state: RootState) => state.bookingReducer.loading;
+export const selectBookings = (state: RootState) =>
+  state.bookingReducer.bookings;
 
-export { ActionType };
+export const selectSortedBookings = createSelector(
+  selectBookings,
+  (bookings) => {
+    const sortedBookings = [...bookings].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    return sortedBookings;
+  }
+);

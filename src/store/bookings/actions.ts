@@ -1,32 +1,76 @@
-import { IBookings, Booking } from "../../common/types";
+import {
+  createBooking,
+  deleteBooking,
+  getBookings,
+} from "../../services/bookings/bookings";
+import { Booking, CreateBooking } from "../../common/types";
+import { Actions } from "../../common/redux.enum";
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { RootState } from "../store";
 
-type AddBookingAction = {
-  type: "bookings/add-booking";
-  payload: IBookings;
-};
+export const loadAllBookings: ReturnType<
+  typeof createAsyncThunk<Booking[] | void, void>
+> = createAsyncThunk<Booking[] | void, void>(
+  Actions.LOAD_BOOKINGS,
+  async () => {
+    try {
+      const bookings = await getBookings();
+      return bookings;
+    } catch (error) {
+      //update to toast
+      throw new Error(`Error: ${error}`);
+    }
+  }
+);
 
-type Action = AddBookingAction;
+export const createNewBooking: ReturnType<
+  typeof createAsyncThunk<Booking | void, CreateBooking>
+> = createAsyncThunk<Booking | void, CreateBooking>(
+  Actions.ADD_BOOKINGS,
+  async ({ tripId, guests, date, userId }) => {
+    try {
+      const booking = await createBooking({
+        tripId,
+        guests,
+        date,
+        userId,
+      });
 
-const addBooking = (booking: Booking): AddBookingAction => {
-  const today = new Date().toISOString();
+      //update to toast
+      console.log("Booked!");
 
-  const bookData = {
-    tripId: booking.tripId,
-    userId: booking.userId,
-    guests: booking.guests,
-    date: booking.date,
-    createdAt: today,
-    trip: booking.trip,
-  };
+      return booking;
+    } catch (error) {
+      //update to toast
+      throw new Error(`Error: ${error}`);
+    }
+  }
+);
 
-  return {
-    type: "bookings/add-booking",
-    payload: { bookData },
-  };
-};
+export const removeBooking = createAsyncThunk<
+  Booking[] | void,
+  string,
+  {
+    state: RootState;
+  }
+>(Actions.DELETE_BOOKINGS, async (bookingId: string, { getState }) => {
+  try {
+    await deleteBooking(bookingId);
 
-const actions = {
-  addBooking,
-};
+    const state = getState();
 
-export { type Action, actions };
+    const { bookings } = state.bookingReducer;
+
+    const filteredBookings = bookings.filter(
+      (booking: Booking) => booking.id !== bookingId
+    );
+
+    //update to toast
+    console.log("Booking deleted!");
+
+    return filteredBookings;
+  } catch (error) {
+    //update to toast
+    throw new Error(`Error: ${error}`);
+  }
+});
