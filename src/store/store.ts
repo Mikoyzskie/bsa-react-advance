@@ -1,7 +1,18 @@
-import { legacy_createStore } from "redux";
-
 import { rootReducer } from "./root-reducer";
+import { configureStore } from "@reduxjs/toolkit";
 
-const store = legacy_createStore(rootReducer);
+// const listenerMiddleware = createListenerMiddleware();
 
-export { store };
+// listenerMiddleware.startListening({
+//   actionCreator: bookingReducer,
+// });
+
+const store = configureStore({
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().prepend(),
+});
+
+type RootState = ReturnType<typeof store.getState>;
+type AppDispatch = typeof store.dispatch;
+
+export { store, type RootState, type AppDispatch };

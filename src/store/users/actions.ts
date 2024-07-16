@@ -1,35 +1,68 @@
-import { IUser, User } from "../../common/types";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  UserSignin,
+  UserSignup,
+  User,
+  UserReturnType,
+} from "../../common/users/types";
+import { Actions } from "../../common/redux.enum";
+import {
+  userSignin,
+  userSignup,
+  getCurrentUser,
+} from "../../services/user/users";
 
-type AddUserAction = {
-  type: "users/signup";
-  payload: IUser;
-};
+export const signup: ReturnType<
+  typeof createAsyncThunk<UserReturnType | void, UserSignup>
+> = createAsyncThunk<UserReturnType | void, UserSignup>(
+  Actions.SIGN_UP,
+  async ({ fullName, email, password }) => {
+    try {
+      const response = await userSignup({
+        fullName,
+        email,
+        password,
+      });
 
-type Action = AddUserAction;
+      localStorage.setItem("TOKEN", response.token);
 
-const signupUser = createAsyncThunk("users/signup", async (payload) => {});
+      return response;
+    } catch (error) {
+      throw new Error(`Error: ${error}`);
+    }
+  }
+);
 
-const addUser = (user: User): AddUserAction => {
-  const created = new Date().toISOString();
+export const signin: ReturnType<
+  typeof createAsyncThunk<UserReturnType | void, UserSignin>
+> = createAsyncThunk<UserReturnType | void, UserSignin>(
+  Actions.SIGN_IN,
+  async ({ email, password }: UserSignin) => {
+    try {
+      const response = await userSignin({ email, password });
+      localStorage.setItem("TOKEN", response.token);
+      return response;
+    } catch (error) {
+      throw new Error(`Error: ${error}`);
+    }
+  }
+);
 
-  const userPayload = {
-    id: crypto.randomUUID(),
-    fullName: user.fullName,
-    email: user.email,
-    password: user.password,
-    createdAt: created,
-  };
+export const currentUser: ReturnType<typeof createAsyncThunk<User, void>> =
+  createAsyncThunk<User, void>(Actions.LOAD_USER, async () => {
+    try {
+      const response = await getCurrentUser();
+      return response;
+    } catch (error) {
+      throw new Error(`Error: ${error}`);
+    }
+  });
 
-  const cpayload = {
-    user: userPayload,
-    token: "",
-  };
-
-  return {
-    type: "users/add",
-    payload: cpayload,
-  };
-};
-
-export { type Action, addUser };
+export const signout: ReturnType<typeof createAsyncThunk<void, void>> =
+  createAsyncThunk<void, void>(Actions.SIGN_OUT, async () => {
+    try {
+      localStorage.removeItem("TOKEN");
+    } catch (error) {
+      throw new Error(`Error: ${error}`);
+    }
+  });

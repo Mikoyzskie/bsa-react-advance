@@ -1,7 +1,8 @@
 export const apiCall = async (
   endpoint: string,
   method: string,
-  body?: BodyInit
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  body?: any
 ) => {
   const token = localStorage.getItem("TOKEN");
   const apiUrl = `https://travel-app-api.up.railway.app/api/v1/${endpoint}`;

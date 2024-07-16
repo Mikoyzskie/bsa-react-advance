@@ -13,7 +13,15 @@ enum Endpoints {
 }
 
 enum Actions {
-  SIGN_UP = "sign/up",
+  SIGN_UP = "user/sign-up",
+  SIGN_IN = "user/sign-in",
+  SIGN_OUT = "user/sign-out",
+  LOAD_USER = "user/load-user",
+  LOAD_TRIPS = "trip/load-trips",
+  LOAD_TRIP = "trip/load-trip",
+  ADD_BOOKINGS = "bookings/add-bookings",
+  DELETE_BOOKINGS = "bookings/delete-booking",
+  LOAD_BOOKINGS = "bookings/load-bookings",
 }
 
 export { Methods, Endpoints, Actions };

@@ -5,15 +5,11 @@ type AppDispatch = typeof store.dispatch;
 
 export { type RootState, type AppDispatch };
 
-export interface Trips {
-  id: string;
-  title: string;
-  description: string;
-  level: string;
-  duration: number;
-  price: number;
-  image: string;
-  createdAt: string;
+export interface CreateBooking {
+  userId: string;
+  tripId: string;
+  guests: string;
+  date: string;
 }
 
 export interface IUser {
@@ -30,6 +26,7 @@ export interface User {
 }
 
 export interface Booking {
+  id: string;
   tripId: string;
   userId: string;
   guests: number;
@@ -39,9 +36,9 @@ export interface Booking {
   trip: Trip;
 }
 
-export interface IBookings extends Booking {
-  id: string;
-}
+// export interface IBookings extends Booking {
+//   id: string;
+// }
 
 export interface Trip {
   title: string;
