@@ -1,7 +1,10 @@
+import { toast } from "react-toastify";
+
 export const apiCall = async (
   endpoint: string,
   method: string,
-  body?: BodyInit
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  body?: any
 ) => {
   const token = localStorage.getItem("TOKEN");
   const apiUrl = `https://travel-app-api.up.railway.app/api/v1/${endpoint}`;
@@ -16,6 +19,12 @@ export const apiCall = async (
     });
 
     const result = await response.json();
+
+    if (!response.ok) {
+      console.error(`Error: ${result.message}`);
+      toast(result.message);
+      throw new Error(`Error: ${result.message}`);
+    }
 
     return result;
   } catch (error) {

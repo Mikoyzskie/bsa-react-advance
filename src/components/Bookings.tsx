@@ -1,24 +1,15 @@
-
-import { useEffect } from "react"
+import { useEffect } from "react";
 
 import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
 
 import { useNavigate } from "react-router-dom"
+import { AppDispatch } from "../store/store";
+import { useDispatch, useSelector } from "react-redux";
+import { loadAllBookings } from "../store/bookings/actions";
+import { sortedBookings, selectLoading } from "../store/bookings/common";
 
-
-
-
-export interface IBookings {
-    id: string;
-    userId: string;
-    tripId: string;
-    guests: number;
-    date: string;
-    trip: Trip;
-    totalPrice: number;
-    createdAt: string;
-}
+import { Booking } from "../common/bookings/types";
 
 export interface Trip {
     title: string;
@@ -34,18 +25,23 @@ interface IBooks {
     price: number
 }
 
-const Bookings = ({ user, books, setBook }: { user: string | undefined, books: IBooks[], setBook: React.Dispatch<React.SetStateAction<IBooks[]>> }) => {
+const Bookings = ({ books, setBook }: { books: IBooks[], setBook: React.Dispatch<React.SetStateAction<IBooks[]>> }) => {
 
     const navigate = useNavigate()
 
+
+    const token = localStorage.getItem("TOKEN")
+    if (!token) {
+        navigate('/sign-in')
+    }
+
+    const dispatch = useDispatch<AppDispatch>();
+    const bookings = useSelector(sortedBookings);
+    const loading = useSelector(selectLoading);
+
     useEffect(() => {
-        if (user === undefined) {
-            navigate('/sign-in')
-        }
-    }, [navigate, user]);
-
-
-
+        dispatch(loadAllBookings());
+    }, [dispatch]);
 
 
     function formatDate(date: Date) {
@@ -65,45 +61,49 @@ const Bookings = ({ user, books, setBook }: { user: string | undefined, books: I
 
 
     return <div className="layout__container">
-        <Header auth={false} user={user} />
+        <Header auth={false} />
         <main className="bookings-page">
             <h1 className="visually-hidden">Travel App</h1>
             <ul className="bookings__list">
                 {
-                    books.map((booking: IBooks) => {
+                    bookings.length === 0 ? <span>No Bookings</span>
+                        : (
+                            loading ? <span>Loading...</span>
+                                : bookings.map((book: Booking) => {
 
-                        // const formatDate = (date: Date) => {
-                        //     return date.toLocaleDateString('en-GB'); // 'en-GB' specifies the format dd/mm/yyyy
-                        // };
-                        const date = new Date(booking.date)
-                        const formattedDate = formatDate(date);
+                                    // const formatDate = (date: Date) => {
+                                    //     return date.toLocaleDateString('en-GB'); // 'en-GB' specifies the format dd/mm/yyyy
+                                    // };
+                                    const date = new Date(book.date)
+                                    const formattedDate = formatDate(date);
 
-                        return (
-                            <li data-test-id="booking" className="booking" key={booking.id}>
-                                <h3 data-test-id="booking-title" className="booking__title">
-                                    {booking.title}
-                                </h3>
-                                <span data-test-id="booking-guests" className="booking__guests">
-                                    {booking.guests} guests
-                                </span>
-                                <span data-test-id="booking-date" className="booking__date">
-                                    {formattedDate}
-                                </span>
-                                <span data-test-id="booking-total" className="booking__total">
-                                    ${booking.price}
-                                </span>
-                                <button
-                                    data-test-id="booking-cancel"
-                                    className="booking__cancel"
-                                    title="Cancel booking"
-                                    id={booking.id}
-                                    onClick={() => handleOnclick(booking.id)}
-                                >
-                                    <span className="visually-hidden">Cancel booking</span>×
-                                </button>
-                            </li>
+                                    return (
+                                        <li data-test-id="booking" className="booking" key={book.id}>
+                                            <h3 data-test-id="booking-title" className="booking__title">
+                                                {book.trip.title}
+                                            </h3>
+                                            <span data-test-id="booking-guests" className="booking__guests">
+                                                {book.guests} guests
+                                            </span>
+                                            <span data-test-id="booking-date" className="booking__date">
+                                                {formattedDate}
+                                            </span>
+                                            <span data-test-id="booking-total" className="booking__total">
+                                                ${book.trip.price}
+                                            </span>
+                                            <button
+                                                data-test-id="booking-cancel"
+                                                className="booking__cancel"
+                                                title="Cancel booking"
+                                                id={book.id}
+                                                onClick={() => handleOnclick(book.id)}
+                                            >
+                                                <span className="visually-hidden">Cancel booking</span>×
+                                            </button>
+                                        </li>
+                                    )
+                                })
                         )
-                    })
                 }
 
 

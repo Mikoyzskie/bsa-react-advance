@@ -1,7 +1,7 @@
 import trips from "../data/trips.json"
-import { Trips } from "../common/types"
+import { Trips } from "../common/trips/types"
 import { useParams, Navigate, useNavigate } from "react-router-dom"
-import { ChangeEvent, useState, useEffect } from "react"
+import { ChangeEvent, useState } from "react"
 import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
 
@@ -13,7 +13,7 @@ interface IBooks {
     price: number
 }
 
-const Trip = ({ user, books, setBook }: { user: string | undefined, books: IBooks[], setBook: React.Dispatch<React.SetStateAction<IBooks[]>> }): JSX.Element => {
+const Trip = ({ books, setBook }: { books: IBooks[], setBook: React.Dispatch<React.SetStateAction<IBooks[]>> }): JSX.Element => {
 
     const navigate = useNavigate();
 
@@ -27,11 +27,10 @@ const Trip = ({ user, books, setBook }: { user: string | undefined, books: IBook
     )
 
 
-    useEffect(() => {
-        if (user === undefined) {
-            navigate('/sign-in')
-        }
-    }, [navigate, user]);
+    const token = localStorage.getItem("TOKEN")
+    if (!token) {
+        navigate("/")
+    }
 
     if (!trip) {
         return <Navigate to="/" replace={true} />
@@ -70,7 +69,7 @@ const Trip = ({ user, books, setBook }: { user: string | undefined, books: IBook
     };
 
     return <div className="layout__container">
-        <Header auth={false} user={user} />
+        <Header auth={false} />
         <main className="trip-page">
 
             <h1 className="visually-hidden">Travel App</h1>

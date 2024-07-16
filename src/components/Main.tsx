@@ -1,30 +1,95 @@
-import { ChangeEventHandler, FormEventHandler, useEffect } from "react"
-import { Trips } from "../common/types"
+import { useEffect, useState, ChangeEvent } from "react"
 import { Link } from "react-router-dom"
 
 import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
 
-import { useNavigate } from "react-router-dom"
+// import { useNavigate } from "react-router-dom"
+import { useAppDispatch } from '../hooks/use-app-dispatch.hook';
+import { tripsActions } from "../store/actions"
+import { useAppSelector } from '../hooks/use-app-selector.hook';
+import { Trip } from "../common/trips-types/trips-type";
 
 
-const Main = ({ onChange, onSubmit, trips, user }: { onChange: ChangeEventHandler<HTMLSelectElement> | undefined, onSubmit: FormEventHandler<HTMLFormElement> | undefined, trips: Trips[], user: string | undefined }): JSX.Element => {
+const Main = (): JSX.Element => {
 
-    const navigate = useNavigate()
+    const trips = useAppSelector((state) => state.trips.trips)
+    const dispatch = useAppDispatch()
+
+    const [filteredTrips, setFilteredTrips] = useState(trips)
+    const [details, setDetails] = useState({ duration: "", level: "" })
+    const [formSearch, setFormSearch] = useState<{ [key: string]: FormDataEntryValue }>({});
+
+    // const navigate = useNavigate()
 
     useEffect(() => {
-        if (user === undefined) {
-            navigate('/sign-in')
+        dispatch(tripsActions.loadTrips())
+    }, [])
+
+
+
+    const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
+        const { name, value } = event.target
+        setDetails((prev) => {
+            return { ...prev, [name]: value }
+        })
+    }
+
+    const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        const form = event.currentTarget;
+        const data = new FormData(form);
+
+        const formDataObject: { [key: string]: FormDataEntryValue } = {};
+        data.forEach((value, key) => {
+            formDataObject[key] = value;
+        });
+
+        setFormSearch(formDataObject);
+    };
+
+
+    useEffect(() => {
+
+        let data: Trip[] = trips || []
+
+        if (details.duration || formSearch.duration) {
+            if (details.duration === "0_x_5") {
+                data = data.filter((trip: Trip) => trip.duration < 5)
+            } else if (details.duration === "5_x_10") {
+                data = data.filter((trip: Trip) => trip.duration > 4 && trip.duration < 10)
+            } else if (details.duration === "10") {
+                data = data.filter((trip: Trip) => trip.duration >= 10)
+            }
         }
-    }, [navigate, user]);
+
+        if (details.level || formSearch.level) {
+            data = data.filter((trip: Trip) => trip.level === details.level)
+        }
+
+        const filterByWord = (array: Trip[], word: string) => {
+            const regex = new RegExp(word, 'i'); // Create a case-insensitive regex dynamically
+            return array.filter(str => regex.test(str.title));
+        };
+
+        if (formSearch.search === "") {
+            data = filterByWord(data, formSearch.search.toString())
+        } else {
+            setFilteredTrips(trips)
+        }
+
+        setFilteredTrips(data)
+
+    }, [details, formSearch, trips])
 
     return <div className="layout__container">
-        <Header auth={false} user={user} />
+        <Header auth={false} />
         <main>
             <h1 className="visually-hidden">Travel App</h1>
             <section className="trips-filter">
                 <h2 className="visually-hidden">Trips filter</h2>
-                <form onSubmit={onSubmit} className="trips-filter__form" autoComplete="off">
+                <form onSubmit={handleSearchSubmit} className="trips-filter__form" autoComplete="off">
                     <label className="trips-filter__search input">
                         <span className="visually-hidden">Search by name</span>
                         <input
@@ -36,7 +101,7 @@ const Main = ({ onChange, onSubmit, trips, user }: { onChange: ChangeEventHandle
                     </label>
                     <label className="select">
                         <span className="visually-hidden">Search by duration</span>
-                        <select data-test-id="filter-duration" name="duration" onChange={onChange}>
+                        <select data-test-id="filter-duration" name="duration" onChange={handleChange}>
                             <option value="">duration</option>
                             <option value="0_x_5">&lt; 5 days</option>
                             <option value="5_x_10">&lt; 10 days</option>
@@ -45,7 +110,7 @@ const Main = ({ onChange, onSubmit, trips, user }: { onChange: ChangeEventHandle
                     </label>
                     <label className="select">
                         <span className="visually-hidden">Search by level</span>
-                        <select data-test-id="filter-level" name="level" onChange={onChange}>
+                        <select data-test-id="filter-level" name="level" onChange={handleChange}>
                             <option value="">level</option>
                             <option value="easy">easy</option>
                             <option value="moderate">moderate</option>
@@ -58,7 +123,7 @@ const Main = ({ onChange, onSubmit, trips, user }: { onChange: ChangeEventHandle
                 <h2 className="visually-hidden">Trips List</h2>
                 <ul className="trip-list">
                     {
-                        trips.map((trip: Trips, index: number) => {
+                        filteredTrips?.map((trip: Trip, index: number) => {
                             return (
                                 <li data-test-id="trip-card" className="trip-card" key={index}>
                                     <img
