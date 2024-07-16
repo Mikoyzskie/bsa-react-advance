@@ -1,11 +1,21 @@
 import { Link } from 'react-router-dom'
 import '../index.css'
 
+// import { useAppDispatch } from '../hooks/use-app-dispatch.hook';
+import { useAppSelector } from '../hooks/use-app-selector.hook';
+// import { useEffect } from 'react';
 
+const Header = ({ auth }: { auth: boolean }): JSX.Element => {
 
-const Header = ({ auth, user }: { auth: boolean, user?: string }): JSX.Element => {
+    const user = useAppSelector((state) => state.user.user)
 
+    console.log(user);
 
+    // const dispatch = useAppDispatch()
+
+    // useEffect(()=>{
+
+    // },[])
 
 
     return <header className="header">
@@ -43,10 +53,13 @@ const Header = ({ auth, user }: { auth: boolean, user?: string }): JSX.Element =
                                         data-test-id="header-profile-nav-username"
                                         className="profile-nav__item"
                                     >
-                                        {user}
+                                        {
+                                            user && <span>{`${user.user.fullName}`}</span>
+                                        }
                                     </li>
                                     <li className="profile-nav__item">
                                         <Link
+
                                             data-test-id="header-profile-nav-sign-out"
                                             to="/sign-in"
                                             className="profile-nav__sign-out button"

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { store } from "../store/store";
 
 type RootState = ReturnType<typeof store.getState>;
@@ -45,3 +46,5 @@ export interface Trip {
   duration: number;
   price: number;
 }
+=======
+>>>>>>> 1804be0 (drafted)

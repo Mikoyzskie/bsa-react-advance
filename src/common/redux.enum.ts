@@ -5,11 +5,11 @@ enum Methods {
 }
 
 enum Endpoints {
-  SIGN_UP = "/auth/sign-up",
-  SIGN_IN = "/auth/sign-in",
-  USER = "/auth/authenticated-user",
-  BOOKINGS = "/bookings",
-  TRIPS = "/trips",
+  SIGN_UP = "auth/sign-up",
+  SIGN_IN = "auth/sign-in",
+  USER = "auth/authenticated-user",
+  BOOKINGS = "bookings",
+  TRIPS = "trips",
 }
 
 enum Actions {

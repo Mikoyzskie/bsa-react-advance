@@ -1,20 +1,22 @@
-// import { FormEventHandler } from 'react'
-import { useState } from "react";
+
+
 import { Link, useNavigate } from "react-router-dom";
 
 import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
 
+import { unwrapResult } from "@reduxjs/toolkit";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store/store";
+import { signin } from "../store/user/actions";
 
-const Signin = ({ signups, setUser }: { signups: { [key: string]: FormDataEntryValue }, setUser: React.Dispatch<React.SetStateAction<string | undefined>> }) => {
 
-    // const [signedIn, setSignedIn] = useState<ISignedIn>()
-    const [signNotFound, setSignNotFound] = useState<boolean>()
-
+const Signin = () => {
     const navigate = useNavigate()
+    const dispatch = useDispatch<AppDispatch>();
 
 
-    const handleSigninSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSigninSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         const form = event.currentTarget;
@@ -25,20 +27,18 @@ const Signin = ({ signups, setUser }: { signups: { [key: string]: FormDataEntryV
             formDataObject[key] = value;
         });
 
-        if (formDataObject.email !== signups.email || formDataObject.password !== signups.password) {
-            setSignNotFound(true)
-        } else {
+        const userData = {
+            email: formDataObject.email.toString(),
+            password: formDataObject.password.toString()
+        }
 
+        const response = await dispatch(signin(userData));
+        const result = unwrapResult(response)
 
-
-
-            setUser(signups["full-name"].toString())
+        if (result?.token) {
             navigate("/")
             form.reset()
         }
-
-
-
     };
 
     return <div className="layout__container">
@@ -63,9 +63,6 @@ const Signin = ({ signups, setUser }: { signups: { [key: string]: FormDataEntryV
                         maxLength={20}
                     />
                 </label>
-                {
-                    signNotFound && <span>Invalid credentials</span>
-                }
                 <button data-test-id="auth-submit" className="button" type="submit">
                     Sign In
                 </button>

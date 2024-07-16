@@ -1,3 +1,5 @@
+import { toast } from "react-toastify";
+
 export const apiCall = async (
   endpoint: string,
   method: string,
@@ -17,6 +19,12 @@ export const apiCall = async (
     });
 
     const result = await response.json();
+
+    if (!response.ok) {
+      console.error(`Error: ${result.message}`);
+      toast(result.message);
+      throw new Error(`Error: ${result.message}`);
+    }
 
     return result;
   } catch (error) {
