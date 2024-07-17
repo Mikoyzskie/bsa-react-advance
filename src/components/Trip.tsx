@@ -1,43 +1,37 @@
-import trips from "../data/trips.json"
-import { Trips } from "../common/trips/types"
-import { useParams, Navigate, useNavigate } from "react-router-dom"
-import { ChangeEvent, useState } from "react"
+
+import { useParams, useNavigate } from "react-router-dom"
+import { ChangeEvent, useEffect, useState } from "react"
 import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
 
-interface IBooks {
-    id: string,
-    title: string,
-    guests: number,
-    date: string,
-    price: number
-}
+import { useAppDispatch } from '../hooks/use-app-dispatch.hook';
+import { useAppSelector } from '../hooks/use-app-selector.hook';
+import { bookingsAction, tripActions } from "../store/actions";
+import { toast } from "react-toastify";
 
-const Trip = ({ books, setBook }: { books: IBooks[], setBook: React.Dispatch<React.SetStateAction<IBooks[]>> }): JSX.Element => {
+const Trip = (): JSX.Element => {
 
     const navigate = useNavigate();
-
+    const { tripId } = useParams()
+    const dispatch = useAppDispatch();
+    const trip = useAppSelector((state) => state.trip.trip)
 
     const [isHidden, setIsHidden] = useState<boolean>(true)
     const [price, setPrice] = useState<number>(0)
 
-    const { tripId } = useParams()
-    const [trip] = trips.filter((item: Trips) =>
-        item.id === tripId
-    )
+    useEffect(() => {
+        if (tripId) {
+            dispatch(tripActions.loadTrip(tripId))
+        } else {
+            navigate("/")
+            toast("Trip Not found")
+        }
+    }, [dispatch, navigate, tripId])
 
 
-    const token = localStorage.getItem("TOKEN")
-    if (!token) {
-        navigate("/")
-    }
-
-    if (!trip) {
-        return <Navigate to="/" replace={true} />
-    }
 
     const handlePriceChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setPrice(() => Number(event.target.value) * trip.price)
+        setPrice(() => Number(event.target.value) * (trip?.price || 1))
     }
 
     const handleTripSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -52,21 +46,15 @@ const Trip = ({ books, setBook }: { books: IBooks[], setBook: React.Dispatch<Rea
         });
 
 
-        const booking = books
-        booking.push({
-            id: crypto.getRandomValues(new Uint32Array(1))[0].toString(16),
-            title: trip.title,
+        const booking = {
+            tripId: trip!.id,
             guests: Number(formDataObject.guests),
-            date: formDataObject.date.toString(),
-            price: price === 0 ? trip.price : price
-        })
+            date: formDataObject.date.toString()
+        }
 
-        setBook(booking.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()))
-        navigate('/bookings')
-        // setFormTrip(formDataObject);
-        form.reset()
-
-    };
+        dispatch(bookingsAction.createBooking(booking))
+        setIsHidden(true)
+    }
 
     return <div className="layout__container">
         <Header auth={false} />
@@ -74,26 +62,30 @@ const Trip = ({ books, setBook }: { books: IBooks[], setBook: React.Dispatch<Rea
 
             <h1 className="visually-hidden">Travel App</h1>
             <div className="trip">
-                <img
-                    data-test-id="trip-details-image"
-                    src={trip.image}
-                    className="trip__img"
-                    alt="trip photo"
-                />
+                {
+                    trip && <img
+                        data-test-id="trip-details-image"
+                        src={trip.image}
+                        className="trip__img"
+                        alt="trip photo"
+                    />
+                }
                 <div className="trip__content">
                     <div className="trip-info">
                         <h3 data-test-id="trip-details-title" className="trip-info__title">
-                            {trip.title}
+                            {
+                                trip && trip.title
+                            }
                         </h3>
                         <div className="trip-info__content">
                             <span
                                 data-test-id="trip-details-duration"
                                 className="trip-info__duration"
                             >
-                                <strong>{trip.duration}</strong> days
+                                <strong>{trip && trip.duration}</strong> days
                             </span>
                             <span data-test-id="trip-details-level" className="trip-info__level">
-                                {trip.level}
+                                {trip && trip.level}
                             </span>
                         </div>
                     </div>
@@ -101,7 +93,7 @@ const Trip = ({ books, setBook }: { books: IBooks[], setBook: React.Dispatch<Rea
                         data-test-id="trip-details-description"
                         className="trip__description"
                     >
-                        {trip.description}
+                        {trip && trip.description}
                     </div>
                     <div className="trip-price">
                         <span>Price</span>
@@ -109,7 +101,7 @@ const Trip = ({ books, setBook }: { books: IBooks[], setBook: React.Dispatch<Rea
                             data-test-id="trip-details-price-value"
                             className="trip-price__value"
                         >
-                            ${trip.price}
+                            ${trip && trip.price}
                         </strong>
                     </div>
                     <button
@@ -135,20 +127,20 @@ const Trip = ({ books, setBook }: { books: IBooks[], setBook: React.Dispatch<Rea
                     <form onSubmit={handleTripSubmit} className="book-trip-popup__form" autoComplete="off">
                         <div className="trip-info">
                             <h3 data-test-id="book-trip-popup-title" className="trip-info__title">
-                                {trip.title}
+                                {trip && trip.title}
                             </h3>
                             <div className="trip-info__content">
                                 <span
                                     data-test-id="book-trip-popup-duration"
                                     className="trip-info__duration"
                                 >
-                                    <strong>{trip.duration}</strong> days
+                                    <strong>{trip && trip.duration}</strong> days
                                 </span>
                                 <span
                                     data-test-id="book-trip-popup-level"
                                     className="trip-info__level"
                                 >
-                                    {trip.level}
+                                    {trip && trip.level}
                                 </span>
                             </div>
                         </div>
@@ -181,7 +173,7 @@ const Trip = ({ books, setBook }: { books: IBooks[], setBook: React.Dispatch<Rea
                                 className="book-trip-popup__total-value"
                             >
                                 ${
-                                    price ? price : trip.price
+                                    price ? price : trip?.price
                                 }
                             </output>
                         </span>

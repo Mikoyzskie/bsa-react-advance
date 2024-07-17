@@ -1,28 +1,14 @@
 import { combineReducers } from "redux";
-<<<<<<< HEAD
 import { reducer as userReducer } from "./user/user";
 import { reducer as tripsReducer } from "./trips/trips";
+import { reducer as tripReducer } from "./trip/trip";
+import { reducer as bookingsReducer } from "./bookings/bookings";
 
 const rootReducer = combineReducers({
   user: userReducer,
   trips: tripsReducer,
-=======
-<<<<<<< HEAD
-import { bookingReducer } from "./bookings/reducer";
-import { tripReducer } from "./trips/reducer";
-
-const rootReducer = combineReducers({
-  bookingReducer,
-  tripReducer,
-=======
-import { reducer as userReducer } from "./user/user";
-import { reducer as tripsReducer } from "./trips/trips";
-
-const rootReducer = combineReducers({
-  user: userReducer,
-  trips: tripsReducer,
->>>>>>> 1804be0 (drafted)
->>>>>>> 0b6097852a705446a1ac5dba92144435d41a1d2e
+  trip: tripReducer,
+  bookings: bookingsReducer,
 });
 
 export { rootReducer };

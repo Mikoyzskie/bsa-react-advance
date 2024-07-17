@@ -6,3 +6,8 @@ export const loadTrips = async (): Promise<Trip[]> => {
 
   return response;
 };
+export const loadTrip = async (id: string): Promise<Trip> => {
+  const response = await apiCall(`trips/${id}`, "GET");
+
+  return response;
+};

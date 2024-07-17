@@ -1,20 +1,17 @@
-import { getTrip } from "../../services/trips/trips";
-import { Trips } from "../../common/trips/types";
-import { Actions } from "../../common/redux.enum";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import { AsyncThunkConfig } from "../../common/store-types/async-thunk-config";
+import { Trip } from "../../common/trips-types/trips-type";
+import { name } from "./slice";
 
-export const getSingleTrip: ReturnType<
-  typeof createAsyncThunk<Trips | void, string>
-> = createAsyncThunk<Trips | void, string>(
-  Actions.LOAD_TRIP,
-  async (id: string) => {
-    try {
-      const response = await getTrip(id);
-      return response;
-    } catch (error) {
-      //update to toast
+const loadTrip = createAsyncThunk<Trip, string, AsyncThunkConfig>(
+  `${name}/load-trip`,
+  async (payload, { extra }) => {
+    const { loadTrip } = extra;
 
-      throw new Error(`Error: ${error}`);
-    }
+    const trip = await loadTrip(payload);
+
+    return trip;
   }
 );
+
+export { loadTrip };

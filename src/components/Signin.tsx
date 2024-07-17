@@ -5,15 +5,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
 
-import { unwrapResult } from "@reduxjs/toolkit";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../store/store";
-import { signin } from "../store/user/actions";
+import { useAppDispatch } from '../hooks/use-app-dispatch.hook';
+// import { useAppSelector } from '../hooks/use-app-selector.hook';
 
+import { userActions } from '../store/actions';
 
 const Signin = () => {
     const navigate = useNavigate()
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
 
 
     const handleSigninSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -32,12 +31,9 @@ const Signin = () => {
             password: formDataObject.password.toString()
         }
 
-        const response = await dispatch(signin(userData));
-        const result = unwrapResult(response)
-
-        if (result?.token) {
+        const result = await dispatch(userActions.userSignin(userData))
+        if (result.payload) {
             navigate("/")
-            form.reset()
         }
     };
 

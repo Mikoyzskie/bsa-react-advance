@@ -1,76 +1,40 @@
-import {
-  createBooking,
-  deleteBooking,
-  getBookings,
-} from "../../services/bookings/bookings";
-import { Booking, CreateBooking } from "../../common/types";
-import { Actions } from "../../common/redux.enum";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { RootState } from "../store";
+import {
+  Booking,
+  BookingBody,
+} from "../../common/bookings-types/bookings-type";
+import { AsyncThunkConfig } from "../../common/store-types/async-thunk-config";
+import { name } from "./slice";
 
-export const loadAllBookings: ReturnType<
-  typeof createAsyncThunk<Booking[] | void, void>
-> = createAsyncThunk<Booking[] | void, void>(
-  Actions.LOAD_BOOKINGS,
-  async () => {
-    try {
-      const bookings = await getBookings();
-      return bookings;
-    } catch (error) {
-      //update to toast
-      throw new Error(`Error: ${error}`);
-    }
+const loadBookings = createAsyncThunk<Booking[], void, AsyncThunkConfig>(
+  `${name}/load-bookings`,
+  async (_payload, { extra }) => {
+    const { loadBookings } = extra;
+
+    const bookings = await loadBookings();
+
+    return bookings;
   }
 );
 
-export const createNewBooking: ReturnType<
-  typeof createAsyncThunk<Booking | void, CreateBooking>
-> = createAsyncThunk<Booking | void, CreateBooking>(
-  Actions.ADD_BOOKINGS,
-  async ({ tripId, guests, date, userId }) => {
-    try {
-      const booking = await createBooking({
-        tripId,
-        guests,
-        date,
-        userId,
-      });
+const createBooking = createAsyncThunk<Booking, BookingBody, AsyncThunkConfig>(
+  `${name}/book-trip`,
+  async (payload, { extra }) => {
+    const { createBooking } = extra;
 
-      //update to toast
-      console.log("Booked!");
-
-      return booking;
-    } catch (error) {
-      //update to toast
-      throw new Error(`Error: ${error}`);
-    }
+    const booking = await createBooking(JSON.stringify(payload));
+    return booking;
   }
 );
 
-export const removeBooking = createAsyncThunk<
-  Booking[] | void,
-  string,
-  {
-    state: RootState;
+const deleteBooking = createAsyncThunk<boolean, string, AsyncThunkConfig>(
+  `${name}/delete-book`,
+  async (payload, { extra }) => {
+    const { deleteBooking } = extra;
+
+    const booking = await deleteBooking(payload);
+    return booking;
   }
->(Actions.DELETE_BOOKINGS, async (bookingId: string, { getState }) => {
-  try {
-    await deleteBooking(bookingId);
+);
 
-    const state = getState();
-
-    const { bookings } = state.bookingReducer;
-
-    const filteredBookings = bookings.filter(
-      (booking: Booking) => booking.id !== bookingId
-    );
-
-    //update to toast
-    console.log("Booking deleted!");
-
-    return filteredBookings;
-  } catch (error) {
-    //update to toast
-    throw new Error(`Error: ${error}`);
-  }
-});
+export { loadBookings, createBooking, deleteBooking };

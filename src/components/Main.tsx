@@ -4,7 +4,7 @@ import { Link } from "react-router-dom"
 import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
 
-// import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useAppDispatch } from '../hooks/use-app-dispatch.hook';
 import { tripsActions } from "../store/actions"
 import { useAppSelector } from '../hooks/use-app-selector.hook';
@@ -17,13 +17,18 @@ const Main = (): JSX.Element => {
     const dispatch = useAppDispatch()
 
     const [filteredTrips, setFilteredTrips] = useState(trips)
-    const [details, setDetails] = useState({ duration: "", level: "" })
-    const [formSearch, setFormSearch] = useState<{ [key: string]: FormDataEntryValue }>({});
+    const [details, setDetails] = useState({ duration: "", level: "", search: "" })
 
-    // const navigate = useNavigate()
+
+    const navigate = useNavigate()
+    const token = localStorage.getItem('TOKEN')
 
     useEffect(() => {
-        dispatch(tripsActions.loadTrips())
+        if (token) {
+            dispatch(tripsActions.loadTrips())
+        } else {
+            navigate("/sign-in")
+        }
     }, [])
 
 
@@ -35,26 +40,21 @@ const Main = (): JSX.Element => {
         })
     }
 
-    const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = event.target
 
-        const form = event.currentTarget;
-        const data = new FormData(form);
+        setDetails((prev) => {
+            return { ...prev, [name]: value }
+        })
+    }
 
-        const formDataObject: { [key: string]: FormDataEntryValue } = {};
-        data.forEach((value, key) => {
-            formDataObject[key] = value;
-        });
-
-        setFormSearch(formDataObject);
-    };
 
 
     useEffect(() => {
 
         let data: Trip[] = trips || []
 
-        if (details.duration || formSearch.duration) {
+        if (details.duration) {
             if (details.duration === "0_x_5") {
                 data = data.filter((trip: Trip) => trip.duration < 5)
             } else if (details.duration === "5_x_10") {
@@ -64,7 +64,7 @@ const Main = (): JSX.Element => {
             }
         }
 
-        if (details.level || formSearch.level) {
+        if (details.level) {
             data = data.filter((trip: Trip) => trip.level === details.level)
         }
 
@@ -73,15 +73,12 @@ const Main = (): JSX.Element => {
             return array.filter(str => regex.test(str.title));
         };
 
-        if (formSearch.search === "") {
-            data = filterByWord(data, formSearch.search.toString())
-        } else {
-            setFilteredTrips(trips)
+        if (details.search) {
+            data = filterByWord(data, details.search)
         }
-
         setFilteredTrips(data)
 
-    }, [details, formSearch, trips])
+    }, [details, trips])
 
     return <div className="layout__container">
         <Header auth={false} />
@@ -89,7 +86,7 @@ const Main = (): JSX.Element => {
             <h1 className="visually-hidden">Travel App</h1>
             <section className="trips-filter">
                 <h2 className="visually-hidden">Trips filter</h2>
-                <form onSubmit={handleSearchSubmit} className="trips-filter__form" autoComplete="off">
+                <form className="trips-filter__form" autoComplete="off">
                     <label className="trips-filter__search input">
                         <span className="visually-hidden">Search by name</span>
                         <input
@@ -97,6 +94,7 @@ const Main = (): JSX.Element => {
                             name="search"
                             type="search"
                             placeholder="search by title"
+                            onChange={handleInputChange}
                         />
                     </label>
                     <label className="select">

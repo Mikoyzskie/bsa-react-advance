@@ -1,22 +1,33 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import '../index.css'
 
-// import { useAppDispatch } from '../hooks/use-app-dispatch.hook';
+import { useAppDispatch } from '../hooks/use-app-dispatch.hook';
 import { useAppSelector } from '../hooks/use-app-selector.hook';
-// import { useEffect } from 'react';
+import { useEffect } from 'react';
+import { userActions } from '../store/actions';
+import { toast } from 'react-toastify';
+import { User } from '../common/user-types/user-type';
 
 const Header = ({ auth }: { auth: boolean }): JSX.Element => {
 
-    const user = useAppSelector((state) => state.user.user)
+    const user = useAppSelector((state) => state.user.currentUser as User)
+    const dispatch = useAppDispatch()
+    const location = useLocation()
 
-    console.log(user);
 
-    // const dispatch = useAppDispatch()
 
-    // useEffect(()=>{
+    useEffect(() => {
 
-    // },[])
+        if (location.pathname !== "/sign-up" && location.pathname !== "/sign-in") {
+            dispatch(userActions.getCurrentUser())
+        }
+    }, [])
 
+    const handleSignout = () => {
+        toast("Signed out")
+        dispatch(userActions.userSignout())
+
+    }
 
     return <header className="header">
         <div className="header__inner">
@@ -54,14 +65,14 @@ const Header = ({ auth }: { auth: boolean }): JSX.Element => {
                                         className="profile-nav__item"
                                     >
                                         {
-                                            user && <span>{`${user.user.fullName}`}</span>
+                                            user && <span>{`${user.fullName}`}</span>
                                         }
                                     </li>
                                     <li className="profile-nav__item">
                                         <Link
-
+                                            onClick={handleSignout}
                                             data-test-id="header-profile-nav-sign-out"
-                                            to="/sign-in"
+                                            to='/sign-in'
                                             className="profile-nav__sign-out button"
                                         >
                                             Sign Out

@@ -20,3 +20,9 @@ export interface SignupBody {
   email: string;
   password: string;
 }
+
+export interface IError {
+  statusCode: number;
+  message: string;
+  error: string;
+}

@@ -1,4 +1,6 @@
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
+
+import { redirect } from "react-router-dom";
 
 export const apiCall = async (
   endpoint: string,
@@ -21,9 +23,8 @@ export const apiCall = async (
     const result = await response.json();
 
     if (!response.ok) {
-      console.error(`Error: ${result.message}`);
-      toast(result.message);
-      throw new Error(`Error: ${result.message}`);
+      console.log(response.status);
+      redirect("/sign-in");
     }
 
     return result;

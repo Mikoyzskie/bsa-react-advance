@@ -1,42 +1,55 @@
 import { rootReducer } from "./root-reducer";
-import { configureStore } from "@reduxjs/toolkit";
-<<<<<<< HEAD
-import { userSignup } from "../services/user/user.service";
-import { loadTrips } from "../services/trips/trips.service";
-
-const extraArgument = {
+import { configureStore, createListenerMiddleware } from "@reduxjs/toolkit";
+import {
   userSignup,
-  loadTrips,
-};
+  userSignin,
+  getCurrentUser as getCurrentUserService,
+} from "../services/user/user.service";
+import { loadTrips, loadTrip } from "../services/trips/trips.service";
+import {
+  loadBookings,
+  createBooking,
+  deleteBooking,
+} from "../services/bookings/bookings.service";
 
-=======
-<<<<<<< HEAD
+import { userActions } from "./actions";
+import { IError } from "../common/user-types/user-type";
+import { redirect } from "react-router-dom";
 
-// const listenerMiddleware = createListenerMiddleware();
+const listenerMiddleware = createListenerMiddleware();
 
-// listenerMiddleware.startListening({
-//   actionCreator: bookingReducer,
-// });
+listenerMiddleware.startListening({
+  actionCreator: userActions.getCurrentUser.fulfilled,
+  effect: async (action, listenerApi) => {
+    listenerApi.cancelActiveListeners();
 
-const store = configureStore({
-  reducer: rootReducer,
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().prepend(),
+    if ((action.payload as IError).statusCode === 401) {
+      redirect("/sign-in");
+      listenerApi.dispatch(userActions.userSignout());
+    }
+  },
 });
 
-type RootState = ReturnType<typeof store.getState>;
-type AppDispatch = typeof store.dispatch;
-
-export { store, type RootState, type AppDispatch };
-=======
-import { userSignup } from "../services/user/user.service";
-import { loadTrips } from "../services/trips/trips.service";
+// listenerMiddleware.startListening({
+//   actionCreator: getCurrentUser.rejected,
+//   effect: async (action, listenerApi) => {
+//     if (action.error && action.error.code === "401") {
+//       listenerApi.dispatch(userActions.userSignout());
+//     }
+//   },
+// });
 
 const extraArgument = {
   userSignup,
+  userSignin,
+  getCurrentUserService,
   loadTrips,
+  loadTrip,
+  loadBookings,
+  createBooking,
+  deleteBooking,
 };
 
->>>>>>> 0b6097852a705446a1ac5dba92144435d41a1d2e
 const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
@@ -44,11 +57,7 @@ const store = configureStore({
       thunk: {
         extraArgument,
       },
-    }),
+    }).prepend(listenerMiddleware.middleware),
 });
 
 export { store, extraArgument };
-<<<<<<< HEAD
-=======
->>>>>>> 1804be0 (drafted)
->>>>>>> 0b6097852a705446a1ac5dba92144435d41a1d2e
